@@ -1,8 +1,10 @@
 package base;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Collections;
+import java.util.List;
 
-public class Folder {
+public class Folder implements Comparable<Folder>{
 	private ArrayList<Note> notes;
 	private String name;
 	
@@ -19,8 +21,65 @@ public class Folder {
 		return this.name;
 	}
 	
-	public ArrayList<Note> getNotes(){
+	public ArrayList<Note> getNotes() {
 		return this.notes;
+	}
+	
+	public void sortNotes() {
+		Collections.sort(notes);
+	}
+	
+	public List<Note> searchNotes(String keywords) {
+		List<Note> result = new ArrayList<Note>();
+		String temp = keywords.toLowerCase();
+		String[] keyList = temp.split(" ");
+		ArrayList<ArrayList<String>> keywordList = new ArrayList<ArrayList<String>>();
+
+		int i = 0;
+		while(i < keyList.length) {
+			if (keyList[i].toLowerCase().equals("or")) {
+				i += 1;
+				keywordList.get(keywordList.size() - 1).add(keyList[i]);
+			} 
+			else {
+				ArrayList<String> tempList = new ArrayList<String>();
+				tempList.add(keyList[i].toLowerCase());
+				keywordList.add(tempList);
+			}
+			i += 1;
+		}
+
+		for(Note n : notes) {
+			String searchWord = n.getTitle().toLowerCase();
+			if(n instanceof TextNote) {
+				searchWord +=  ((TextNote)n).getContent().toLowerCase();
+			}
+
+			boolean haveResult = true;
+			for(ArrayList<String> pair : keywordList) {
+				boolean matched = false;
+				for(String key : pair) {
+					if(searchWord.contains(key)) {
+						matched = true;
+						break;
+					}
+				}
+				if(matched == false) {
+					haveResult = false;
+					break;
+				}
+			}
+			if(haveResult == true) {
+				result.add(n);
+			}
+		}
+
+		return result;
+	}
+	
+	@Override
+	public int compareTo(Folder f) {
+		return name.compareTo(f.getName());
 	}
 	
 	@Override
